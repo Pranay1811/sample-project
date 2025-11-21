@@ -1,0 +1,58 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven-3.8.6'    // Configure Maven in Jenkins Global Tool Configuration
+        jdk 'Java-17'          // Configure JDK in Jenkins Global Tool Configuration
+    }
+
+    environment {
+        // Optional environment variables
+        MAVEN_OPTS = "-Dmaven.test.failure.ignore=false"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Pull code from Git
+                git branch: 'main', url: 'https://github.com/Pranay1811/sample-project.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building Spring Boot application...'
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running tests...'
+                sh 'mvn test'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                echo 'Packaging application...'
+                sh 'mvn package'
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Build completed successfully!'
+        }
+        failure {
+            echo 'Build failed!'
+        }
+    }
+}
